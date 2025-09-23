@@ -13,11 +13,23 @@ from typing import List
 # Add src to Python path
 sys.path.append(str(Path(__file__).parent / "src"))
 
+# Flexible import system for public/private modes
+try:
+    from gs_core import StrategicAnalyzer, ContributionFinder
+    STRATEGIC_MODE = "professional"
+    MODE_MESSAGE = "🚀 **Professional Mode**: Advanced strategic analysis active"
+    MODE_COLOR = "success"
+except ImportError:
+    from mock_implementations import MockStrategicAnalyzer as StrategicAnalyzer
+    from mock_implementations import MockContributionFinder as ContributionFinder  
+    STRATEGIC_MODE = "demo"
+    MODE_MESSAGE = "🎯 **Demo Mode**: Showcasing concept with simplified algorithms"
+    MODE_COLOR = "info"
+
+# Import remaining components from public module
 from src.giant_shoulders import (
     StrategicProfile, 
     GitHubStrategicScanner, 
-    StrategicAnalyzer, 
-    ContributionFinder,
     DiscoveryResult
 )
 
@@ -34,6 +46,12 @@ def main():
     st.title("🏔️ Giant Shoulders")
     st.subheader("Strategic Open Source Discovery")
     st.markdown("*Standing on the shoulders of giants - Find GitHub projects aligned with your career goals*")
+    
+    # Display current mode
+    if MODE_COLOR == "success":
+        st.success(MODE_MESSAGE)
+    else:
+        st.info(MODE_MESSAGE)
     
     # Sidebar for profile input
     with st.sidebar:
@@ -116,6 +134,10 @@ def main():
             placeholder="fintech, healthcare, education"
         ) else []
         industry_interests = [interest.strip() for interest in industry_interests if interest.strip()]
+        
+        # Show analysis capabilities in sidebar
+        st.markdown("---")
+        display_analysis_capabilities()
     
     # Main content area
     col1, col2 = st.columns([2, 1])
@@ -210,6 +232,9 @@ def discover_projects(current_role: str, experience_level: str, primary_tech: Li
         scanner = GitHubStrategicScanner()
         analyzer = StrategicAnalyzer()
         finder = ContributionFinder()
+        
+        # Show mode info during processing
+        st.write(f"**Analysis Engine**: {analyzer.get_capabilities()['mode']}")
         
         # Search for projects
         projects = scanner.search_repositories(
@@ -355,5 +380,33 @@ def display_strategic_analysis(projects, profile):
         st.info(f"🚀 {len(recent_projects)} projects were updated in the last 30 days")
 
 
+def display_analysis_capabilities():
+    """Show current analysis capabilities and limitations"""
+    with st.expander("🔍 Analysis Capabilities"):
+        # Get capabilities from current analyzer
+        analyzer = StrategicAnalyzer()
+        capabilities = analyzer.get_capabilities()
+        
+        st.write(f"**Mode**: {capabilities['mode']}")
+        st.write("**Current Features:**")
+        for feature in capabilities['features']:
+            st.write(f"✅ {feature.replace('_', ' ').title()}")
+            
+        if 'limitations' in capabilities:
+            st.write("**Current Limitations:**")
+            for limitation in capabilities['limitations']:
+                st.write(f"⚠️ {limitation}")
+                
+        if 'upgrade_info' in capabilities:
+            st.markdown("---")
+            st.info(capabilities['upgrade_info']['message'])
+            
+            if STRATEGIC_MODE == "demo":
+                st.write("**Professional Features Include:**")
+                for feature in capabilities['upgrade_info']['features']:
+                    st.write(feature)
+
+
 if __name__ == "__main__":
     main()
+

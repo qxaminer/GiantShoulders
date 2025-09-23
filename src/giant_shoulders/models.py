@@ -104,3 +104,4 @@ class DiscoveryResult:
         return sorted(self.opportunities, 
                      key=lambda x: x.total_value_score, 
                      reverse=True)[:limit]
+
